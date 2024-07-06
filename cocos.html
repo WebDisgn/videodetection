@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COCO-SSD Object Detection</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+  <style>
+    .highlighter {
+      position: absolute;
+      border: 1px solid #00ff26;
+    }
+    #video, #canvas {
+        position:absolute;
+    }
+  </style>
+</head>
+<body>
+  <video id="video" width="640" height="480" autoplay></video>
+  <canvas id="canvas" width="640" height="480"></canvas>
+
+  <script>
+    async function setupCamera() {
+      const video = document.getElementById('video');
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true
+      });
+      video.srcObject = stream;
+      return new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+          resolve(video);
+        };
+      });
+    }
+
+    async function main() {
+      const video = await setupCamera();
+      video.play();
+      
+      const model = await cocoSsd.load();
+      detectFrame(video, model);
+    }
+
+    function detectFrame(video, model) {
+      model.detect(video).then(predictions => {
+        renderPredictions(predictions);
+        requestAnimationFrame(() => {
+          detectFrame(video, model);
+        });
+      });
+    }
+
+    function renderPredictions(predictions) {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.drawImage(video, 0, 0, ctx.canvas.width, ctx.canvas.height);
+
+      predictions.forEach(prediction => {
+        const [x, y, width, height] = prediction.bbox;
+        ctx.strokeStyle = '#00FF33AE';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, width, height);
+        ctx.font = '18px Arial';
+        ctx.fillStyle = '#0E8D3D';
+        ctx.fillText(
+          `${prediction.class}: ${Math.round(prediction.score * 100)}%`,
+          x,
+          y > 10 ? y - 5 : 10
+        );
+      });
+    }
+
+    main();
+  </script>
+</body>
+</html>

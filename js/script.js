@@ -8,8 +8,8 @@ async function loadLabeledImages() {
         labels.map(async label => {
             const descriptions = [];
             for (let i = 1; i <= 5; i++) { // Cargar cinco imágenes de ejemplo de cada persona
-                const img = await faceapi.fetchImage(`../img/${label}/${i}.png`);
-                console.log(`Cargando imagen: ../img/${label}/${i}.png`);
+                const img = await faceapi.fetchImage(`../videodetection/img/${label}/${i}.png`);//https://webdisgn.github.io/videodetection/img/Pablo/1.png
+                console.log(`Cargando imagen: ../videodetection/img/${label}/${i}.png`);
                 const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
                 if (detections) {
                     descriptions.push(detections.descriptor);
